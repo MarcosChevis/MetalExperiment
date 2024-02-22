@@ -11,7 +11,8 @@ import SwiftUI
 struct MetalExperimentApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MetalViewRepresentable()
+                .frame(width: 1000, height: 1000)
         }
     }
 }
