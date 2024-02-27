@@ -23,7 +23,8 @@ final class MetalViewCoordinator {
     private func setupView() {
         metalView.delegate = renderer
         metalView.preferredFramesPerSecond = 60
-        metalView.enableSetNeedsDisplay = true
+        metalView.enableSetNeedsDisplay = false
+        metalView.isPaused = false
         
         if let metalDevice = MTLCreateSystemDefaultDevice() {
             metalView.device = metalDevice
