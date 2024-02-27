@@ -12,8 +12,8 @@
 
 
 struct Vertex {
-    vector_float2 position;
-    vector_float4 color;
+    simd_float2 position;
+    simd_float4 color;
 };
 
 struct vec_vertex3 {
@@ -21,11 +21,11 @@ struct vec_vertex3 {
 };
 
 struct RegularPolygon {
-    vector_float2 center;
+    simd_float2 center;
     float radius;
     int amountOfSides;
-    vector_float4 color;
-    int64_t bufferStart;
+    simd_float4 color;
+    int bufferStart;
     
 };
 

@@ -12,8 +12,8 @@ using namespace metal;
 #include "definitions.h"
 
 struct Fragment {
-    float4 position [[position]];
-    float4 color;
+    simd_float4 position [[position]];
+    simd_float4 color;
 };
 
 vertex Fragment vertexShader(const device Vertex *vertexArray [[buffer(0)]], unsigned int vid [[vertex_id]]) {
@@ -31,40 +31,46 @@ fragment float4 fragmentShader(Fragment input [[stage_in]]) {
     return input.color;
 }
 
-kernel void triangulateregularPoly(constant RegularPolygon *polygonsArr [[buffer(0)]],
+
+kernel void triangulateRegularPoly(constant RegularPolygon *polygonsArr [[buffer(0)]],
                                    device Vertex *resultArr [[buffer(1)]],
-                                            uint  index [[thread_position_in_grid]]) {
+                                   uint index [[thread_position_in_grid]]) {
     
-    float deltaAngle = 360 / polygonsArr[index].amountOfSides;
+    float deltaAngle = 2.0 * M_PI_F / polygonsArr[index].amountOfSides; // Angle increment for each vertex
     int i = 0;
     float currentAngle = 0;
     
-    vector_float2 currentPoint = vector_float2(polygonsArr[index].radius + polygonsArr[index].center[0], polygonsArr[index].center[1]);
-
-    while (currentAngle < 360) {
-        vector_float2 nextPoint = vector_float2(polygonsArr[index].radius * cos((currentAngle + deltaAngle) * M_PI_F / 180) + polygonsArr[index].center[0], polygonsArr[index].radius * sin((currentAngle + deltaAngle) * M_PI_F / 180) + polygonsArr[index].center[1]);
+    simd_float2 center = polygonsArr[index].center;
+    float radius = polygonsArr[index].radius;
+    
+    // Iterate over each vertex of the polygon
+    while (i < polygonsArr[index].amountOfSides) {
+        // Calculate the position of the current vertex
+        simd_float2 currentPoint = vector_float2(radius * cos(currentAngle) + center.x,
+                                                 radius * sin(currentAngle) + center.y);
         
-        // como eu faço esse retorno?? o buffer tem o tamanho certo, mas eu não sei onde cada poligono deve começar. acabar é começar + (lados*3)
-        // fiz gambiarra
-        Vertex v1 = Vertex();
+        // Create vertices for the triangle
+        Vertex v1, v2, v3;
         v1.position = currentPoint;
         v1.color = polygonsArr[index].color;
-        resultArr[polygonsArr[index].bufferStart+i] = v1;
         
-        Vertex v2 = Vertex();
-        v2.position = polygonsArr[index].center;
+        v2.position = center;
         v2.color = polygonsArr[index].color;
-        resultArr[polygonsArr[index].bufferStart+1+i] = v2;
         
-        Vertex v3 = Vertex();
+        currentAngle += deltaAngle; // Move to the next angle
+        
+        // Calculate the position of the next vertex
+        simd_float2 nextPoint = vector_float2(radius * cos(currentAngle) + center.x,
+                                              radius * sin(currentAngle) + center.y);
+        
         v3.position = nextPoint;
         v3.color = polygonsArr[index].color;
-        resultArr[polygonsArr[index].bufferStart+2+i] = v3;
         
+        // Assign the vertices to the result array
+        resultArr[polygonsArr[index].bufferStart + (i * 3)] = v1;
+        resultArr[polygonsArr[index].bufferStart + (i * 3) + 1] = v2;
+        resultArr[polygonsArr[index].bufferStart + (i * 3) + 2] = v3;
         
-
-        currentAngle += deltaAngle;
-        i += 1;
+        i += 1; // Move to the next vertex
     }
-    
 }
