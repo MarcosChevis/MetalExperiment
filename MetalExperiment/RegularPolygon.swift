@@ -7,10 +7,11 @@
 
 import Foundation
 
-struct RegularPolygon {
-    let center: vector_float2
-    let radius: Float32
-    let amountOfSides: Int32
+extension RegularPolygon {
+//    var center: vector_float2
+//    let radius: Float32
+//    let amountOfSides: Int32
+//    let color: vector_float4
     
     func triangulated() -> [Vertex] {
         var vertices: [Vertex] = []
@@ -21,7 +22,7 @@ struct RegularPolygon {
         
         while currentAngle < 360 {
             let nextPoint: vector_float2 = [radius*cos((currentAngle + deltaAngle) * Float32.pi / 180) + center[0], radius*sin((currentAngle + deltaAngle) * Float32.pi / 180) + center[1]]
-            vertices.append(contentsOf: [Vertex(position: currentPoint, color: [0, 0, 0, 1]), Vertex(position: center, color: [0, 0, 0, 1]), Vertex(position: nextPoint, color: [0, 0, 0, 1])])
+            vertices.append(contentsOf: [Vertex(position: currentPoint, color: color), Vertex(position: center, color: color), Vertex(position: nextPoint, color: color)])
             currentPoint = nextPoint
             
             currentAngle += deltaAngle

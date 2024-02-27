@@ -18,6 +18,8 @@ extension Stridable {
 }
 
 extension Vertex: Stridable {}
+extension RegularPolygon: Stridable {}
+extension Int: Stridable {}
 
 extension Array: Stridable where Element: Stridable {
     func getStride() -> Int {

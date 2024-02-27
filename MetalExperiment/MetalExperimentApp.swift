@@ -12,7 +12,7 @@ struct MetalExperimentApp: App {
     var body: some Scene {
         WindowGroup {
             MetalViewRepresentable()
-                .frame(width: 1000, height: 1000)
+//                .frame(width: 1000, height: 1000)
         }
     }
 }
