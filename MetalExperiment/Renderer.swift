@@ -7,6 +7,8 @@
 
 import MetalKit
 
+let SIZE:Int32 = 100
+
 final class Renderer: NSObject, MTKViewDelegate {
     
     var metalDevice: MTLDevice?
@@ -28,14 +30,14 @@ final class Renderer: NSObject, MTKViewDelegate {
         self.renderPipelineState = makePipelineState()
         let nextStateFunc = library?.makeFunction(name: "getNextState")
         let nextStatePipeline = try? metalDevice?.makeComputePipelineState(function: nextStateFunc!)
-        self.game = GameOfLifeRenderer(gridSize: 100, nextStatePipeline: nextStatePipeline!)
+        self.game = GameOfLifeRenderer(gridSize: SIZE, nextStatePipeline: nextStatePipeline!)
         let triangulatePolygonsGPUFunc = library?.makeFunction(name: "triangulateRegularPoly")
         self.triangulationPipelineState = try! metalDevice!.makeComputePipelineState(function: triangulatePolygonsGPUFunc!)
         
         game?.initializeRandomState()
-        timer = Timer.scheduledTimer(withTimeInterval: 1/60, repeats: true, block: { [weak self] _ in
-            self?.game?.updateCellState(using: (self?.metalCommandQueue)!, device: (self?.metalDevice)!)
-        })
+//        timer = Timer.scheduledTimer(withTimeInterval: 1/60, repeats: true, block: { [weak self] _ in
+//            self?.game?.updateCellState(using: (self?.metalCommandQueue)!, device: (self?.metalDevice)!)
+//        })
         
     }
     
@@ -43,27 +45,20 @@ final class Renderer: NSObject, MTKViewDelegate {
     
     var polygons: [RegularPolygon] = {
         var pols = [RegularPolygon]()
-        let gridSize = 100 // Number of polygons per row and column
-        var bufferStart: Int32 = 0
         
-        let minValue: Float = -1.0 + 0.01 // Adjusted to leave space for the edge squares
-        let maxValue: Float = 1.0 - 0.01 // Adjusted to leave space for the edge squares
-        let step: Float = 2.0 / Float(gridSize - 1)
-        
-        for i in 0..<gridSize {
-            for j in 0..<gridSize {
-                let x = minValue + step * Float(i)
-                let y = minValue + step * Float(j)
-                let center: simd_float2 = [x, y]
-                let radius: Float = 0.01
-                let amountOfSides: Int32 = 4 // Change the number of sides for each polygon
-                let color: simd_float4 = [1, 1, 1, 1] // Change the color for each polygon
-                
-                let polygon = RegularPolygon(center: center, radius: radius, amountOfSides: amountOfSides, color: color, rotationAngle: .pi/4, bufferStart: bufferStart)
-                pols.append(polygon)
-                
-                // Update bufferStart for the next polygon
-                bufferStart += Int32(Int(amountOfSides) * 3) // Assuming each polygon will have 3 vertices per side
+        let step = 2.0 / Float(SIZE)
+
+        let radius: Float = step * 0.5 // Set the radius to half of the step to fit the polygons exactly within the screen
+        let amountOfSides: Int32 = 8
+        let color: simd_float4 = [1, 1, 1, 1]
+
+        for i in 0..<SIZE {
+            for j in 0..<SIZE {
+                // Calculate the center of the polygon
+                let centerX = -1.0 + Float(i) * step + step * 0.5
+                let centerY = -1.0 + Float(j) * step + step * 0.5
+                let center: simd_float2 = [centerX, centerY]
+                pols.append(RegularPolygon(center: center, radius: radius, amountOfSides: amountOfSides, color: color, rotationAngle: .pi, bufferStart: Int32(pols.count * Int(amountOfSides) * 3)))
             }
         }
         return pols
@@ -79,7 +74,7 @@ final class Renderer: NSObject, MTKViewDelegate {
             preconditionFailure("Metal objects not properly initialized")
         }
         
-//        game?.updateCellState(using: metalCommandQueue, device: metalDevice)
+        game?.updateCellState(using: metalCommandQueue, device: metalDevice)
         for i in 0..<game!.cellState.count {
             let num = Float(game!.cellState[i])
             polygons[i].color = [num, num, num, 1]
