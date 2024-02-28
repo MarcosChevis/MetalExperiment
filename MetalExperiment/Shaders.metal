@@ -64,3 +64,31 @@ kernel void triangulateRegularPoly(constant RegularPolygon *polygonsArr [[buffer
 }
 
 
+kernel void getNextState(constant int *state [[buffer(0)]],
+                         constant int *size [[buffer(1)]],
+                         device int *newState [[buffer((2))]],
+                         uint2 index [[thread_position_in_grid]]) {
+    
+    const int gridSize = size[0];
+       
+       int aliveNeighbors = 0;
+       
+       for (int x = -1; x <= 1; x++) {
+           for (int y = -1; y <= 1; y++) {
+               if (!(x == 0 && y == 0)) {
+                   int newRow = (int(index.x) + x + gridSize) % gridSize;
+                   int newCol = (int(index.y) + y + gridSize) % gridSize;
+                   aliveNeighbors += state[newRow * gridSize + newCol];
+               }
+           }
+       }
+       
+       int currentState = state[int(index.x) * gridSize + int(index.y)];
+       
+       if (currentState == 1) {
+           newState[int(index.x) * gridSize + int(index.y)] = (aliveNeighbors == 2 || aliveNeighbors == 3) ? 1 : 0;
+       } else {
+           newState[int(index.x) * gridSize + int(index.y)] = (aliveNeighbors == 3) ? 1 : 0;
+       }
+    
+}

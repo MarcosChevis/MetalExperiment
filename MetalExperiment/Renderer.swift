@@ -14,17 +14,28 @@ final class Renderer: NSObject, MTKViewDelegate {
     var renderPipelineState: MTLRenderPipelineState?
     var library: MTLLibrary?
     var triangulationPipelineState: MTLComputePipelineState?
+    var timer = Timer()
     
-    var vertices: [Vertex] = []
+    
     private var clearColor: MTLClearColor  = MTLClearColorMake(1.0, 1.0, 1.0, 1.0)
+    var game: GameOfLifeRenderer?
     
     init(metalDevice: MTLDevice?) {
         self.metalDevice = metalDevice
+        
         super.init()
         self.metalCommandQueue = metalDevice?.makeCommandQueue()
         self.renderPipelineState = makePipelineState()
+        let nextStateFunc = library?.makeFunction(name: "getNextState")
+        let nextStatePipeline = try? metalDevice?.makeComputePipelineState(function: nextStateFunc!)
+        self.game = GameOfLifeRenderer(gridSize: 100, nextStatePipeline: nextStatePipeline!)
         let triangulatePolygonsGPUFunc = library?.makeFunction(name: "triangulateRegularPoly")
         self.triangulationPipelineState = try! metalDevice!.makeComputePipelineState(function: triangulatePolygonsGPUFunc!)
+        
+        game?.initializeRandomState()
+        timer = Timer.scheduledTimer(withTimeInterval: 1/60, repeats: true, block: { [weak self] _ in
+            self?.game?.updateCellState(using: (self?.metalCommandQueue)!, device: (self?.metalDevice)!)
+        })
         
     }
     
@@ -66,6 +77,12 @@ final class Renderer: NSObject, MTKViewDelegate {
               let renderPipelineState = renderPipelineState,
               let triangulationPipelineState = triangulationPipelineState else {
             preconditionFailure("Metal objects not properly initialized")
+        }
+        
+//        game?.updateCellState(using: metalCommandQueue, device: metalDevice)
+        for i in 0..<game!.cellState.count {
+            let num = Float(game!.cellState[i])
+            polygons[i].color = [num, num, num, 1]
         }
         
         guard let polygonsBuffer = createPolygonsBuffer(metalDevice),
@@ -161,4 +178,62 @@ extension Renderer {
         }
         return pipelineState
     }
+}
+
+class GameOfLifeRenderer {
+    var gridSize: Int32
+    var cellState: [Int32]
+    
+    private var nextStatePipeline: MTLComputePipelineState?
+
+    init(gridSize: Int32, nextStatePipeline: MTLComputePipelineState) {
+        self.gridSize = gridSize
+        self.cellState = Array(repeating: 0, count: Int(gridSize * gridSize))
+        self.nextStatePipeline = nextStatePipeline
+    }
+    
+    func initializeRandomState() {
+        for i in 0..<Int(gridSize * gridSize) {
+            cellState[i] = Int32.random(in: 0...1)
+        }
+    }
+    
+    func updateCellState(using commandQueue: MTLCommandQueue, device: MTLDevice) {
+        guard let nextStatePipeline = nextStatePipeline else {
+            fatalError("Next state pipeline not initialized")
+        }
+        
+        guard let commandBuffer = commandQueue.makeCommandBuffer(),
+              let commandEncoder = commandBuffer.makeComputeCommandEncoder() else {
+            preconditionFailure("buffer fué")
+        }
+        
+        let stateBuffer = device.makeBuffer(bytes: cellState,
+                                            length: cellState.count * MemoryLayout<Int32>.stride)
+        let sizeBuffer = device.makeBuffer(bytes: [gridSize],
+                                           length: MemoryLayout<Int32>.stride)
+        let resultBuffer = device.makeBuffer(length: cellState.count * MemoryLayout<Int32>.stride)
+        
+        commandEncoder.setComputePipelineState(nextStatePipeline)
+        commandEncoder.setBuffer(stateBuffer, offset: 0, index: 0)
+        commandEncoder.setBuffer(sizeBuffer, offset: 0, index: 1)
+        commandEncoder.setBuffer(resultBuffer, offset: 0, index: 2)
+        
+        let threadsPerGrid = MTLSize(width: Int(gridSize), height: Int(gridSize), depth: 1)
+        let maxThreadsPerThreadgroup = nextStatePipeline.maxTotalThreadsPerThreadgroup
+        let threadsPerThreadgroup = MTLSize(width: maxThreadsPerThreadgroup, height: 1, depth: 1)
+        
+        commandEncoder.dispatchThreads(threadsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)
+        commandEncoder.endEncoding()
+        commandBuffer.commit()
+        commandBuffer.waitUntilCompleted()
+        
+        
+        if let contents = resultBuffer?.contents().bindMemory(to: Int32.self, capacity: cellState.count) {
+            cellState = Array(UnsafeBufferPointer(start: contents, count: cellState.count))
+        } else {
+            fatalError("Failed to access result buffer contents")
+        }
+    }
+        
 }
