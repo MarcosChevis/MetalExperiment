@@ -25,8 +25,8 @@ struct RegularPolygon {
     float radius;
     int amountOfSides;
     simd_float4 color;
+    float rotationAngle;
     int bufferStart;
-    
 };
 
 

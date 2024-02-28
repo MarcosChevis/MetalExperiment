@@ -8,7 +8,7 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "3E8539E3-385F-4319-B7F6-D3C80034098E"
-            shouldBeEnabled = "No"
+            shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "MetalExperiment/MetalViewCoordinator.swift"
@@ -18,18 +18,6 @@
             endingLineNumber = "17"
             landmarkName = "init()"
             landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.RuntimeIssueBreakpoint">
-         <BreakpointContent
-            uuid = "5BA24ABB-9FD3-48B6-B1D7-17F6FBC491BB"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            breakpointStackSelectionBehavior = "1"
-            type = "8"
-            categories = "Metal Diagnostics">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

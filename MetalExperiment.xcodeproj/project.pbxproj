@@ -15,7 +15,6 @@
 		BA2CD8BA2B7FFC03006C3C1A /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = BA2CD8B92B7FFC03006C3C1A /* Shaders.metal */; };
 		BADF8EEC2B86BF0800A399F2 /* Stridable.swift in Sources */ = {isa = PBXBuildFile; fileRef = BADF8EEB2B86BF0800A399F2 /* Stridable.swift */; };
 		BADF8EEE2B87EAB900A399F2 /* Renderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BADF8EED2B87EAB900A399F2 /* Renderer.swift */; };
-		BADF8EF02B87EAF100A399F2 /* RegularPolygon.swift in Sources */ = {isa = PBXBuildFile; fileRef = BADF8EEF2B87EAF100A399F2 /* RegularPolygon.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,7 +29,6 @@
 		BA2CD8BB2B7FFC16006C3C1A /* definitions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = definitions.h; sourceTree = "<group>"; };
 		BADF8EEB2B86BF0800A399F2 /* Stridable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stridable.swift; sourceTree = "<group>"; };
 		BADF8EED2B87EAB900A399F2 /* Renderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Renderer.swift; sourceTree = "<group>"; };
-		BADF8EEF2B87EAF100A399F2 /* RegularPolygon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegularPolygon.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,7 +65,6 @@
 				BA2CD8AA2B7FFAFA006C3C1A /* MetalViewRepresentable.swift */,
 				BA2CD8B72B7FFBEF006C3C1A /* MetalViewCoordinator.swift */,
 				BADF8EED2B87EAB900A399F2 /* Renderer.swift */,
-				BADF8EEF2B87EAF100A399F2 /* RegularPolygon.swift */,
 				BADF8EEB2B86BF0800A399F2 /* Stridable.swift */,
 				BA2CD8AC2B7FFAFC006C3C1A /* Assets.xcassets */,
 				BA2CD8AE2B7FFAFC006C3C1A /* MetalExperiment.entitlements */,
@@ -161,7 +158,6 @@
 				BA2CD8B82B7FFBEF006C3C1A /* MetalViewCoordinator.swift in Sources */,
 				BADF8EEC2B86BF0800A399F2 /* Stridable.swift in Sources */,
 				BADF8EEE2B87EAB900A399F2 /* Renderer.swift in Sources */,
-				BADF8EF02B87EAF100A399F2 /* RegularPolygon.swift in Sources */,
 				BA2CD8A92B7FFAFA006C3C1A /* MetalExperimentApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

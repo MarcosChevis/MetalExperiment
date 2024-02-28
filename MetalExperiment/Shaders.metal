@@ -36,41 +36,31 @@ kernel void triangulateRegularPoly(constant RegularPolygon *polygonsArr [[buffer
                                    device Vertex *resultArr [[buffer(1)]],
                                    uint index [[thread_position_in_grid]]) {
     
-    float deltaAngle = 2.0 * M_PI_F / polygonsArr[index].amountOfSides; // Angle increment for each vertex
-    int i = 0;
-    float currentAngle = 0;
+    float deltaAngle = 2.0 * M_PI_F / polygonsArr[index].amountOfSides;
+    float currentAngle = polygonsArr[index].rotationAngle; // Use rotation angle from RegularPolygon
     
     simd_float2 center = polygonsArr[index].center;
     float radius = polygonsArr[index].radius;
+    simd_float4 color = polygonsArr[index].color;
     
-    // Iterate over each vertex of the polygon
-    while (i < polygonsArr[index].amountOfSides) {
-        // Calculate the position of the current vertex
-        simd_float2 currentPoint = vector_float2(radius * cos(currentAngle) + center.x,
-                                                 radius * sin(currentAngle) + center.y);
+    for (int i = 0; i < polygonsArr[index].amountOfSides; ++i) {
+        simd_float2 currentPoint = vector_float2(radius * cos(currentAngle), radius * sin(currentAngle)) + center;
+        simd_float2 nextPoint = vector_float2(radius * cos(currentAngle + deltaAngle), radius * sin(currentAngle + deltaAngle)) + center;
         
-        // Create vertices for the triangle
         Vertex v1, v2, v3;
         v1.position = currentPoint;
-        v1.color = polygonsArr[index].color;
-        
         v2.position = center;
-        v2.color = polygonsArr[index].color;
-        
-        currentAngle += deltaAngle; // Move to the next angle
-        
-        // Calculate the position of the next vertex
-        simd_float2 nextPoint = vector_float2(radius * cos(currentAngle) + center.x,
-                                              radius * sin(currentAngle) + center.y);
-        
         v3.position = nextPoint;
-        v3.color = polygonsArr[index].color;
         
-        // Assign the vertices to the result array
-        resultArr[polygonsArr[index].bufferStart + (i * 3)] = v1;
-        resultArr[polygonsArr[index].bufferStart + (i * 3) + 1] = v2;
-        resultArr[polygonsArr[index].bufferStart + (i * 3) + 2] = v3;
+        v1.color = v2.color = v3.color = color;
         
-        i += 1; // Move to the next vertex
+        int startIndex = polygonsArr[index].bufferStart + (i * 3);
+        resultArr[startIndex] = v1;
+        resultArr[startIndex + 1] = v2;
+        resultArr[startIndex + 2] = v3;
+        
+        currentAngle += deltaAngle;
     }
 }
+
+
