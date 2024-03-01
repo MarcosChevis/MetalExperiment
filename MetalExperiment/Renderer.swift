@@ -75,7 +75,7 @@ final class Renderer: NSObject, MTKViewDelegate {
         game?.updateCellState(using: metalCommandQueue, device: metalDevice)
         for i in 0..<1 {
             let num = Float(game!.cellState[i])
-            polygons[i].color = [1, 1, 1, 1]
+            polygons[i].color = [num, num, num, 1]
             vertexCount += polygons[i].amountOfSides
             indexCount += polygons[i].amountOfSides * 3
         }
