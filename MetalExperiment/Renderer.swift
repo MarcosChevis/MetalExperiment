@@ -7,7 +7,7 @@
 
 import MetalKit
 
-let SIZE:Int32 = 100
+let SIZE:Int32 = 1
 
 final class Renderer: NSObject, MTKViewDelegate {
     
@@ -20,7 +20,7 @@ final class Renderer: NSObject, MTKViewDelegate {
     
     
     private var clearColor: MTLClearColor  = MTLClearColorMake(1.0, 1.0, 1.0, 1.0)
-    var game: GameOfLifeRenderer?
+//    var game: GameOfLifeRenderer?
     
     init(metalDevice: MTLDevice?) {
         self.metalDevice = metalDevice
@@ -30,15 +30,11 @@ final class Renderer: NSObject, MTKViewDelegate {
         self.renderPipelineState = makePipelineState()
         let nextStateFunc = library?.makeFunction(name: "getNextState")
         let nextStatePipeline = try? metalDevice?.makeComputePipelineState(function: nextStateFunc!)
-        self.game = GameOfLifeRenderer(gridSize: SIZE, nextStatePipeline: nextStatePipeline!)
+//        self.game = GameOfLifeRenderer(gridSize: SIZE, nextStatePipeline: nextStatePipeline!)
         let triangulatePolygonsGPUFunc = library?.makeFunction(name: "triangulateRegularPoly")
         self.triangulationPipelineState = try! metalDevice!.makeComputePipelineState(function: triangulatePolygonsGPUFunc!)
         
-        game?.initializeRandomState()
-//        timer = Timer.scheduledTimer(withTimeInterval: 1/60, repeats: true, block: { [weak self] _ in
-//            self?.game?.updateCellState(using: (self?.metalCommandQueue)!, device: (self?.metalDevice)!)
-//        })
-        
+//        game?.initializeRandomState()
     }
     
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {}
@@ -58,7 +54,7 @@ final class Renderer: NSObject, MTKViewDelegate {
                 let centerX = -1.0 + Float(i) * step + step * 0.5
                 let centerY = -1.0 + Float(j) * step + step * 0.5
                 let center: simd_float2 = [centerX, centerY]
-                pols.append(RegularPolygon(center: center, radius: radius, amountOfSides: amountOfSides, color: color, rotationAngle: .pi, bufferStart: Int32(pols.count * Int(amountOfSides) * 3)))
+                pols.append(RegularPolygon(center: center, radius: radius, amountOfSides: amountOfSides, color: color, rotationAngle: .pi, bufferStart: Int32(pols.count * (Int(amountOfSides) + 1))))
             }
         }
         return pols
@@ -74,25 +70,34 @@ final class Renderer: NSObject, MTKViewDelegate {
             preconditionFailure("Metal objects not properly initialized")
         }
         
-        game?.updateCellState(using: metalCommandQueue, device: metalDevice)
-        for i in 0..<game!.cellState.count {
-            let num = Float(game!.cellState[i])
-            polygons[i].color = [num, num, num, 1]
+        var vertexCount = Int32(polygons.count)
+        var indexCount = Int32.zero
+//        game?.updateCellState(using: metalCommandQueue, device: metalDevice)
+        for i in 0..<1 {
+//            let num = Float(game!.cellState[i])
+            polygons[i].color = [0, 0, 0, 1]
+            vertexCount += polygons[i].amountOfSides
+            indexCount += polygons[i].amountOfSides * 3
         }
         
         guard let polygonsBuffer = createPolygonsBuffer(metalDevice),
-              let resultArrayBuffer = createResultArrayBuffer(metalDevice) else {
+              let verticesArrayBuffer = createVerticesArrayBuffer(metalDevice, vertexCount: vertexCount),
+              let indexArrayBuffer = createIndexBuffer(metalDevice, indexCount: indexCount) else {
             preconditionFailure("Buffer could not be created")
         }
         
         triangulatePolygons(
             polygonsBuffer: polygonsBuffer,
-            resultArrayBuffer: resultArrayBuffer,
-            triangulationPipelineState: triangulationPipelineState, 
+            indexArrayBuffer: indexArrayBuffer,
+            verticesArrayBuffer: verticesArrayBuffer,
+            triangulationPipelineState: triangulationPipelineState,
             commandQueue: metalCommandQueue
         )
         renderTriangles(
-            resultArrayBuffer: resultArrayBuffer,
+            verticesArrayBuffer: verticesArrayBuffer,
+            verticesArrayLength: Int(vertexCount),
+            indexArrayBuffer: indexArrayBuffer,
+            indexCount: indexCount,
             renderPipelineState: renderPipelineState,
             renderPassDescriptor: renderPassDescriptor,
             drawable: drawable,
@@ -100,19 +105,24 @@ final class Renderer: NSObject, MTKViewDelegate {
             device: metalDevice
         )
     }
-
+    
+    
     private func createPolygonsBuffer(_ device: MTLDevice) -> MTLBuffer? {
-        return device.makeBuffer(bytes: polygons, length: MemoryLayout<RegularPolygon>.stride * polygons.count, options: [])
+        return device.makeBuffer(bytes: polygons, length: MemoryLayout<RegularPolygon>.stride * polygons.count)
+    }
+    private func createIndexBuffer(_ device: MTLDevice, indexCount: Int32) -> MTLBuffer? {
+        return device.makeBuffer(length: MemoryLayout<Int>.stride * Int(indexCount))
     }
 
-    private func createResultArrayBuffer(_ device: MTLDevice) -> MTLBuffer? {
-        let resultArrayLength = polygons.reduce(0) { $0 + Int($1.amountOfSides) } * MemoryLayout<Vertex>.stride * 3
-        return device.makeBuffer(length: resultArrayLength, options: [])
+    private func createVerticesArrayBuffer(_ device: MTLDevice, vertexCount: Int32) -> MTLBuffer? {
+        let verticesArrayLength = Int(vertexCount) * MemoryLayout<Vertex>.stride
+        return device.makeBuffer(length: verticesArrayLength, options: [])
     }
 
     private func triangulatePolygons(
         polygonsBuffer: MTLBuffer,
-        resultArrayBuffer: MTLBuffer,
+        indexArrayBuffer: MTLBuffer,
+        verticesArrayBuffer: MTLBuffer,
         triangulationPipelineState: MTLComputePipelineState,
         commandQueue: MTLCommandQueue
     ) {
@@ -122,7 +132,9 @@ final class Renderer: NSObject, MTKViewDelegate {
         }
         commandEncoder.setComputePipelineState(triangulationPipelineState)
         commandEncoder.setBuffer(polygonsBuffer, offset: 0, index: 0)
-        commandEncoder.setBuffer(resultArrayBuffer, offset: 0, index: 1)
+        commandEncoder.setBuffer(indexArrayBuffer, offset: 0, index: 1)
+        commandEncoder.setBuffer(verticesArrayBuffer, offset: 0, index: 2)
+        
         let threadsPerGrid = MTLSize(width: polygons.count, height: 1, depth: 1)
         let maxThreadsPerThreadgroup = triangulationPipelineState.maxTotalThreadsPerThreadgroup
         let threadsPerThreadgroup = MTLSize(width: maxThreadsPerThreadgroup, height: 1, depth: 1)
@@ -133,7 +145,10 @@ final class Renderer: NSObject, MTKViewDelegate {
     }
 
     private func renderTriangles(
-        resultArrayBuffer: MTLBuffer,
+        verticesArrayBuffer: MTLBuffer,
+        verticesArrayLength: Int,
+        indexArrayBuffer: MTLBuffer,
+        indexCount: Int32,
         renderPipelineState: MTLRenderPipelineState,
         renderPassDescriptor: MTLRenderPassDescriptor,
         drawable: CAMetalDrawable,
@@ -148,10 +163,13 @@ final class Renderer: NSObject, MTKViewDelegate {
         renderPassDescriptor.colorAttachments[0].clearColor = clearColor
         renderPassDescriptor.colorAttachments[0].loadAction = .clear
         renderPassDescriptor.colorAttachments[0].storeAction = .store
-        let resultArrayLength = polygons.reduce(0) { $0 + Int($1.amountOfSides) } * MemoryLayout<Vertex>.stride * 3
-        let vertexBuffer = device.makeBuffer(bytesNoCopy: resultArrayBuffer.contents(), length: resultArrayLength, options: [], deallocator: nil)
-        renderEncoder.setVertexBuffer(vertexBuffer, offset: 0, index: 0)
-        renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: resultArrayLength / MemoryLayout<Vertex>.stride)
+//        let verticesArrayLength = polygons.reduce(0) { $0 + Int($1.amountOfSides) } * MemoryLayout<Vertex>.stride * 3
+        let verticesBuffer = device.makeBuffer(bytesNoCopy: verticesArrayBuffer.contents(), length: verticesArrayLength, options: [], deallocator: nil)
+        
+        renderEncoder.setVertexBuffer(verticesBuffer, offset: 0, index: 0)
+        renderEncoder.setVertexBuffer(indexArrayBuffer, offset: 0, index: 1)
+        //num sei
+        renderEncoder.drawIndexedPrimitives(type: .triangle, indexCount: Int(indexCount), indexType: .uint16, indexBuffer: indexArrayBuffer, indexBufferOffset: 0)
         renderEncoder.endEncoding()
         newCommandBuffer.present(drawable)
         newCommandBuffer.commit()

@@ -16,7 +16,9 @@ struct Fragment {
     simd_float4 color;
 };
 
-vertex Fragment vertexShader(const device Vertex *vertexArray [[buffer(0)]], unsigned int vid [[vertex_id]]) {
+vertex Fragment vertexShader(const device Vertex *vertexArray [[buffer(0)]],
+                             const device int16_t *indexArray [[buffer(1)]],
+                             unsigned int vid [[vertex_id]]) {
     Vertex input = vertexArray[vid];
     
     Fragment output;
@@ -33,7 +35,8 @@ fragment float4 fragmentShader(Fragment input [[stage_in]]) {
 
 
 kernel void triangulateRegularPoly(constant RegularPolygon *polygonsArr [[buffer(0)]],
-                                   device Vertex *resultArr [[buffer(1)]],
+                                   device int16_t *indexArray [[buffer(1)]],
+                                   device Vertex *vertexArray [[buffer(2)]],
                                    uint index [[thread_position_in_grid]]) {
     
     float deltaAngle = 2.0 * M_PI_F / polygonsArr[index].amountOfSides;
@@ -43,22 +46,44 @@ kernel void triangulateRegularPoly(constant RegularPolygon *polygonsArr [[buffer
     float radius = polygonsArr[index].radius;
     simd_float4 color = polygonsArr[index].color;
     
+    //center vertex
+    Vertex c;
+    c.position = polygonsArr[index].center;
+    c.color = polygonsArr[index].color;
+    
+    vertexArray[polygonsArr[index].bufferStart] = c;
+    
     for (int i = 0; i < polygonsArr[index].amountOfSides; ++i) {
         simd_float2 currentPoint = vector_float2(radius * cos(currentAngle), radius * sin(currentAngle)) + center;
-        simd_float2 nextPoint = vector_float2(radius * cos(currentAngle + deltaAngle), radius * sin(currentAngle + deltaAngle)) + center;
         
-        Vertex v1, v2, v3;
+        //current vertex
+        Vertex v1;
         v1.position = currentPoint;
-        v2.position = center;
-        v3.position = nextPoint;
         
-        v1.color = v2.color = v3.color = color;
+        v1.color = color;
         
-        int startIndex = polygonsArr[index].bufferStart + (i * 3);
-        resultArr[startIndex] = v1;
-        resultArr[startIndex + 1] = v2;
-        resultArr[startIndex + 2] = v3;
+        vertexArray[polygonsArr[index].bufferStart + 1 + i] = v1;
         
+        //get where buffer start
+        int startIndexForIndex = polygonsArr[index].bufferStart + (i * 3);
+        
+        //current vertex index
+        indexArray[startIndexForIndex] = polygonsArr[index].bufferStart + i;
+        
+        //center vertex index
+        indexArray[startIndexForIndex + 1] = polygonsArr[index].bufferStart;
+        
+        //next vertex index
+        int16_t indexOfNextVertice;
+        
+        if (i == polygonsArr[index].amountOfSides - 1) {
+            indexOfNextVertice = polygonsArr[index].bufferStart + 1;
+        } else {
+            indexOfNextVertice = polygonsArr[index].bufferStart + i + 1;
+        }
+        indexArray[startIndexForIndex + 2] = indexOfNextVertice;
+        
+        //update angle
         currentAngle += deltaAngle;
     }
 }
