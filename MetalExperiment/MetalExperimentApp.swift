@@ -12,6 +12,7 @@ struct MetalExperimentApp: App {
     var body: some Scene {
         WindowGroup {
             MetalViewRepresentable()
+                .ignoresSafeArea()
 //                .frame(width: 1000, height: 1000)
         }
     }

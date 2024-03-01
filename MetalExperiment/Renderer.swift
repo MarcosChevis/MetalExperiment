@@ -49,7 +49,7 @@ final class Renderer: NSObject, MTKViewDelegate {
         let step = 2.0 / Float(SIZE)
 
         let radius: Float = step * 0.5 // Set the radius to half of the step to fit the polygons exactly within the screen
-        let amountOfSides: Int32 = 8
+        let amountOfSides: Int32 = 4
         let color: simd_float4 = [1, 1, 1, 1]
 
         for i in 0..<SIZE {
@@ -58,7 +58,7 @@ final class Renderer: NSObject, MTKViewDelegate {
                 let centerX = -1.0 + Float(i) * step + step * 0.5
                 let centerY = -1.0 + Float(j) * step + step * 0.5
                 let center: simd_float2 = [centerX, centerY]
-                pols.append(RegularPolygon(center: center, radius: radius, amountOfSides: amountOfSides, color: color, rotationAngle: .pi, bufferStart: Int32(pols.count * Int(amountOfSides) * 3)))
+                pols.append(RegularPolygon(center: center, radius: radius, amountOfSides: amountOfSides, color: color, rotationAngle: .pi/4, bufferStart: Int32(pols.count * Int(amountOfSides) * 3)))
             }
         }
         return pols
