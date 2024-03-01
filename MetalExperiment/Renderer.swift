@@ -7,7 +7,7 @@
 
 import MetalKit
 
-let SIZE:Int32 = 1
+let SIZE:Int32 = 100
 
 final class Renderer: NSObject, MTKViewDelegate {
     
@@ -20,7 +20,7 @@ final class Renderer: NSObject, MTKViewDelegate {
     
     
     private var clearColor: MTLClearColor  = MTLClearColorMake(1.0, 1.0, 1.0, 1.0)
-//    var game: GameOfLifeRenderer?
+    var game: GameOfLifeRenderer?
     
     init(metalDevice: MTLDevice?) {
         self.metalDevice = metalDevice
@@ -30,11 +30,11 @@ final class Renderer: NSObject, MTKViewDelegate {
         self.renderPipelineState = makePipelineState()
         let nextStateFunc = library?.makeFunction(name: "getNextState")
         let nextStatePipeline = try? metalDevice?.makeComputePipelineState(function: nextStateFunc!)
-//        self.game = GameOfLifeRenderer(gridSize: SIZE, nextStatePipeline: nextStatePipeline!)
+        self.game = GameOfLifeRenderer(gridSize: SIZE, nextStatePipeline: nextStatePipeline!)
         let triangulatePolygonsGPUFunc = library?.makeFunction(name: "triangulateRegularPoly")
         self.triangulationPipelineState = try! metalDevice!.makeComputePipelineState(function: triangulatePolygonsGPUFunc!)
         
-//        game?.initializeRandomState()
+        game?.initializeRandomState()
     }
     
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {}
@@ -72,10 +72,10 @@ final class Renderer: NSObject, MTKViewDelegate {
         
         var vertexCount = Int32(polygons.count)
         var indexCount = Int32.zero
-//        game?.updateCellState(using: metalCommandQueue, device: metalDevice)
+        game?.updateCellState(using: metalCommandQueue, device: metalDevice)
         for i in 0..<1 {
-//            let num = Float(game!.cellState[i])
-            polygons[i].color = [0, 0, 0, 1]
+            let num = Float(game!.cellState[i])
+            polygons[i].color = [1, 1, 1, 1]
             vertexCount += polygons[i].amountOfSides
             indexCount += polygons[i].amountOfSides * 3
         }
@@ -111,11 +111,11 @@ final class Renderer: NSObject, MTKViewDelegate {
         return device.makeBuffer(bytes: polygons, length: MemoryLayout<RegularPolygon>.stride * polygons.count)
     }
     private func createIndexBuffer(_ device: MTLDevice, indexCount: Int32) -> MTLBuffer? {
-        return device.makeBuffer(length: MemoryLayout<Int>.stride * Int(indexCount))
+        return device.makeBuffer(length: MemoryLayout<UInt16>.stride * Int(indexCount))
     }
 
     private func createVerticesArrayBuffer(_ device: MTLDevice, vertexCount: Int32) -> MTLBuffer? {
-        let verticesArrayLength = Int(vertexCount) * MemoryLayout<Vertex>.stride
+        let verticesArrayLength =  Int(vertexCount) * MemoryLayout<Vertex>.stride
         return device.makeBuffer(length: verticesArrayLength, options: [])
     }
 
@@ -163,10 +163,9 @@ final class Renderer: NSObject, MTKViewDelegate {
         renderPassDescriptor.colorAttachments[0].clearColor = clearColor
         renderPassDescriptor.colorAttachments[0].loadAction = .clear
         renderPassDescriptor.colorAttachments[0].storeAction = .store
-//        let verticesArrayLength = polygons.reduce(0) { $0 + Int($1.amountOfSides) } * MemoryLayout<Vertex>.stride * 3
-        let verticesBuffer = device.makeBuffer(bytesNoCopy: verticesArrayBuffer.contents(), length: verticesArrayLength, options: [], deallocator: nil)
         
-        renderEncoder.setVertexBuffer(verticesBuffer, offset: 0, index: 0)
+        renderEncoder.setVertexBuffer(verticesArrayBuffer, offset: 0, index: 0)
+        
         renderEncoder.setVertexBuffer(indexArrayBuffer, offset: 0, index: 1)
         //num sei
         renderEncoder.drawIndexedPrimitives(type: .triangle, indexCount: Int(indexCount), indexType: .uint16, indexBuffer: indexArrayBuffer, indexBufferOffset: 0)

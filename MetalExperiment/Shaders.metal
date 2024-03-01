@@ -17,7 +17,7 @@ struct Fragment {
 };
 
 vertex Fragment vertexShader(const device Vertex *vertexArray [[buffer(0)]],
-                             const device int16_t *indexArray [[buffer(1)]],
+                             const device uint16_t *indexArray [[buffer(1)]],
                              unsigned int vid [[vertex_id]]) {
     Vertex input = vertexArray[vid];
     
@@ -35,12 +35,12 @@ fragment float4 fragmentShader(Fragment input [[stage_in]]) {
 
 
 kernel void triangulateRegularPoly(constant RegularPolygon *polygonsArr [[buffer(0)]],
-                                   device int16_t *indexArray [[buffer(1)]],
+                                   device uint16_t *indexArray [[buffer(1)]],
                                    device Vertex *vertexArray [[buffer(2)]],
                                    uint index [[thread_position_in_grid]]) {
     
     float deltaAngle = 2.0 * M_PI_F / polygonsArr[index].amountOfSides;
-    float currentAngle = polygonsArr[index].rotationAngle; // Use rotation angle from RegularPolygon
+    float currentAngle = polygonsArr[index].rotationAngle;
     
     simd_float2 center = polygonsArr[index].center;
     float radius = polygonsArr[index].radius;
@@ -68,7 +68,7 @@ kernel void triangulateRegularPoly(constant RegularPolygon *polygonsArr [[buffer
         int startIndexForIndex = polygonsArr[index].bufferStart + (i * 3);
         
         //current vertex index
-        indexArray[startIndexForIndex] = polygonsArr[index].bufferStart + i;
+        indexArray[startIndexForIndex] = polygonsArr[index].bufferStart + i + 1;
         
         //center vertex index
         indexArray[startIndexForIndex + 1] = polygonsArr[index].bufferStart;
@@ -79,7 +79,7 @@ kernel void triangulateRegularPoly(constant RegularPolygon *polygonsArr [[buffer
         if (i == polygonsArr[index].amountOfSides - 1) {
             indexOfNextVertice = polygonsArr[index].bufferStart + 1;
         } else {
-            indexOfNextVertice = polygonsArr[index].bufferStart + i + 1;
+            indexOfNextVertice = polygonsArr[index].bufferStart + i + 2;
         }
         indexArray[startIndexForIndex + 2] = indexOfNextVertice;
         
