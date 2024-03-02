@@ -88,7 +88,6 @@ kernel void triangulateRegularPoly(constant RegularPolygon *polygonsArr [[buffer
     }
 }
 
-
 kernel void getNextState(constant int *state [[buffer(0)]],
                          constant int *size [[buffer(1)]],
                          device int *newState [[buffer((2))]],

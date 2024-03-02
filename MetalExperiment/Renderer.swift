@@ -40,6 +40,10 @@ final class Renderer: NSObject, MTKViewDelegate {
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {}
     
     var polygons: [RegularPolygon] = {
+        Renderer.makePolys()
+    }()
+    
+    static func makePolys() -> [RegularPolygon] {
         var pols = [RegularPolygon]()
         
         let step = 2.0 / Float(SIZE)
@@ -54,11 +58,24 @@ final class Renderer: NSObject, MTKViewDelegate {
                 let centerX = -1.0 + Float(i) * step + step * 0.5
                 let centerY = -1.0 + Float(j) * step + step * 0.5
                 let center: simd_float2 = [centerX, centerY]
-                pols.append(RegularPolygon(center: center, radius: radius, amountOfSides: amountOfSides, color: color, rotationAngle: .pi, bufferStart: Int32(pols.count * (Int(amountOfSides) + 1))))
+                let previousIndex = pols.endIndex
+                //let a: Int32 = Int32(pols.count * (Int(amountOfSides) + 1) + pols[previousIndex].bufferSize)
+                let a = (pols[previousIndex].bufferStart + amountOfSides + 1) * Int32(pols.count)
+                pols.append(
+                    RegularPolygon(
+                        center: center,
+                        radius: radius,
+                        amountOfSides: amountOfSides,
+                        color: color,
+                        rotationAngle: .pi,
+                        bufferStart: 0
+                    )
+                )
             }
         }
+        
         return pols
-    }()
+    }
 
     func draw(in view: MTKView) {
         guard let metalDevice = metalDevice,
@@ -70,13 +87,13 @@ final class Renderer: NSObject, MTKViewDelegate {
             preconditionFailure("Metal objects not properly initialized")
         }
         
-        var vertexCount = Int32(polygons.count)
+        var vertexCount = Int32.zero
         var indexCount = Int32.zero
         game?.updateCellState(using: metalCommandQueue, device: metalDevice)
         for i in 0..<1 {
             let num = Float(game!.cellState[i])
             polygons[i].color = [num, num, num, 1]
-            vertexCount += polygons[i].amountOfSides
+            vertexCount += polygons[i].amountOfSides + 1
             indexCount += polygons[i].amountOfSides * 3
         }
         
