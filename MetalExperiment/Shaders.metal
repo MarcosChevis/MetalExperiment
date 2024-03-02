@@ -17,7 +17,6 @@ struct Fragment {
 };
 
 vertex Fragment vertexShader(const device Vertex *vertexArray [[buffer(0)]],
-                             const device uint16_t *indexArray [[buffer(1)]],
                              unsigned int vid [[vertex_id]]) {
     Vertex input = vertexArray[vid];
     
@@ -35,53 +34,55 @@ fragment float4 fragmentShader(Fragment input [[stage_in]]) {
 
 
 kernel void triangulateRegularPoly(constant RegularPolygon *polygonsArr [[buffer(0)]],
-                                   device uint16_t *indexArray [[buffer(1)]],
-                                   device Vertex *vertexArray [[buffer(2)]],
-                                   uint index [[thread_position_in_grid]]) {
+                                   device uint32_t *indicesArray [[buffer(1)]],
+                                   device Vertex *vertices [[buffer(2)]],
+                                   uint currentPolyIndex [[thread_position_in_grid]]) {
     
-    float deltaAngle = 2.0 * M_PI_F / polygonsArr[index].amountOfSides;
-    float currentAngle = polygonsArr[index].rotationAngle;
+    float deltaAngle = 2.0 * M_PI_F / polygonsArr[currentPolyIndex].amountOfSides;
+    float currentAngle = polygonsArr[currentPolyIndex].rotationAngle;
     
-    simd_float2 center = polygonsArr[index].center;
-    float radius = polygonsArr[index].radius;
-    simd_float4 color = polygonsArr[index].color;
+    simd_float2 center = polygonsArr[currentPolyIndex].center;
+    float radius = polygonsArr[currentPolyIndex].radius;
+    simd_float4 color = polygonsArr[currentPolyIndex].color;
+    
+    int bufferStart = polygonsArr[currentPolyIndex].bufferStart;
     
     //center vertex
     Vertex c;
-    c.position = polygonsArr[index].center;
-    c.color = polygonsArr[index].color;
+    c.position = center;
+    c.color = color;
     
-    vertexArray[polygonsArr[index].bufferStart] = c;
+    vertices[bufferStart] = c;
     
-    for (int i = 0; i < polygonsArr[index].amountOfSides; ++i) {
+    for (int i = 0; i < polygonsArr[currentPolyIndex].amountOfSides; ++i) {
         simd_float2 currentPoint = vector_float2(radius * cos(currentAngle), radius * sin(currentAngle)) + center;
         
         //current vertex
         Vertex v1;
         v1.position = currentPoint;
-        
         v1.color = color;
+        vertices[bufferStart + 1 + i] = v1;
         
-        vertexArray[polygonsArr[index].bufferStart + 1 + i] = v1;
-        
-        //get where buffer start
-        int startIndexForIndex = polygonsArr[index].bufferStart + (i * 3);
-        
-        //current vertex index
-        indexArray[startIndexForIndex] = polygonsArr[index].bufferStart + i + 1;
-        
+        // creating triangle from indices
+        int indicesStart = ((bufferStart + i - currentPolyIndex) * 3) ;
+        //calculated vertex index
+        indicesArray[indicesStart] = bufferStart + i + 1;
         //center vertex index
-        indexArray[startIndexForIndex + 1] = polygonsArr[index].bufferStart;
+        indicesArray[indicesStart + 1] = bufferStart;
         
-        //next vertex index
-        int16_t indexOfNextVertice;
+        // vertex to be calculated next or first calculated
+        int32_t lastVertexIndex;
         
-        if (i == polygonsArr[index].amountOfSides - 1) {
-            indexOfNextVertice = polygonsArr[index].bufferStart + 1;
+        // if there is no more to be calculated, connect to the first that is not the center.
+        if (i == polygonsArr[currentPolyIndex].amountOfSides - 1) {
+            lastVertexIndex = bufferStart + 1;
         } else {
-            indexOfNextVertice = polygonsArr[index].bufferStart + i + 2;
+        // if there is at least one more, get the index for the next vertex.
+        //                  | initial index for this poly: center   | + 1 + i for current vertex index, + 1 for next vertex index.
+            lastVertexIndex =               bufferStart             +    2 + i;
         }
-        indexArray[startIndexForIndex + 2] = indexOfNextVertice;
+        //last vertex of triangle for i side
+        indicesArray[indicesStart + 2] = lastVertexIndex;
         
         //update angle
         currentAngle += deltaAngle;

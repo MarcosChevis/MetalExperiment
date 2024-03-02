@@ -11,8 +11,11 @@ import SwiftUI
 struct MetalExperimentApp: App {
     var body: some Scene {
         WindowGroup {
-            MetalViewRepresentable()
-                .frame(width: 1000, height: 1000)
+            ZStack {
+                MetalViewRepresentable()
+                    .ignoresSafeArea()
+//                    .frame(width: 1000, height: 1000)
+            }
         }
     }
 }

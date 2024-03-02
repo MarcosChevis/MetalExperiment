@@ -7,7 +7,8 @@
 
 import MetalKit
 
-let SIZE:Int32 = 100
+let SIZE: Int32 = 500
+var vertexCount1 = 0
 
 final class Renderer: NSObject, MTKViewDelegate {
     
@@ -18,7 +19,6 @@ final class Renderer: NSObject, MTKViewDelegate {
     var triangulationPipelineState: MTLComputePipelineState?
     var timer = Timer()
     
-    
     private var clearColor: MTLClearColor  = MTLClearColorMake(1.0, 1.0, 1.0, 1.0)
     var game: GameOfLifeRenderer?
     
@@ -27,6 +27,7 @@ final class Renderer: NSObject, MTKViewDelegate {
         
         super.init()
         self.metalCommandQueue = metalDevice?.makeCommandQueue()
+        self.library = metalDevice?.makeDefaultLibrary()
         self.renderPipelineState = makePipelineState()
         let nextStateFunc = library?.makeFunction(name: "getNextState")
         let nextStatePipeline = try? metalDevice?.makeComputePipelineState(function: nextStateFunc!)
@@ -45,32 +46,31 @@ final class Renderer: NSObject, MTKViewDelegate {
     
     static func makePolys() -> [RegularPolygon] {
         var pols = [RegularPolygon]()
-        
         let step = 2.0 / Float(SIZE)
-
         let radius: Float = step * 0.5 // Set the radius to half of the step to fit the polygons exactly within the screen
-        let amountOfSides: Int32 = 8
-        let color: simd_float4 = [1, 1, 1, 1]
-
+        let amountOfSides: Int32 = 5
+        var bufferStart: Int32 = 0
+        let color = simd_float4(0, 0, 0, 0)
+        
         for i in 0..<SIZE {
             for j in 0..<SIZE {
                 // Calculate the center of the polygon
                 let centerX = -1.0 + Float(i) * step + step * 0.5
                 let centerY = -1.0 + Float(j) * step + step * 0.5
                 let center: simd_float2 = [centerX, centerY]
-                let previousIndex = pols.endIndex
-                //let a: Int32 = Int32(pols.count * (Int(amountOfSides) + 1) + pols[previousIndex].bufferSize)
-                let a = (pols[previousIndex].bufferStart + amountOfSides + 1) * Int32(pols.count)
+                
                 pols.append(
                     RegularPolygon(
                         center: center,
                         radius: radius,
                         amountOfSides: amountOfSides,
                         color: color,
-                        rotationAngle: .pi,
-                        bufferStart: 0
+                        rotationAngle: .pi/2,
+                        bufferStart: bufferStart
                     )
                 )
+                
+                bufferStart += amountOfSides + 1
             }
         }
         
@@ -90,12 +90,13 @@ final class Renderer: NSObject, MTKViewDelegate {
         var vertexCount = Int32.zero
         var indexCount = Int32.zero
         game?.updateCellState(using: metalCommandQueue, device: metalDevice)
-        for i in 0..<1 {
+        for i in 0..<polygons.count {
             let num = Float(game!.cellState[i])
             polygons[i].color = [num, num, num, 1]
             vertexCount += polygons[i].amountOfSides + 1
             indexCount += polygons[i].amountOfSides * 3
         }
+        vertexCount1 = Int(vertexCount)
         
         guard let polygonsBuffer = createPolygonsBuffer(metalDevice),
               let verticesArrayBuffer = createVerticesArrayBuffer(metalDevice, vertexCount: vertexCount),
@@ -112,7 +113,7 @@ final class Renderer: NSObject, MTKViewDelegate {
         )
         renderTriangles(
             verticesArrayBuffer: verticesArrayBuffer,
-            verticesArrayLength: Int(vertexCount),
+//            verticesArrayLength: Int(vertexCount),
             indexArrayBuffer: indexArrayBuffer,
             indexCount: indexCount,
             renderPipelineState: renderPipelineState,
@@ -128,7 +129,7 @@ final class Renderer: NSObject, MTKViewDelegate {
         return device.makeBuffer(bytes: polygons, length: MemoryLayout<RegularPolygon>.stride * polygons.count)
     }
     private func createIndexBuffer(_ device: MTLDevice, indexCount: Int32) -> MTLBuffer? {
-        return device.makeBuffer(length: MemoryLayout<UInt16>.stride * Int(indexCount))
+        return device.makeBuffer(length: MemoryLayout<UInt32>.stride * Int(indexCount))
     }
 
     private func createVerticesArrayBuffer(_ device: MTLDevice, vertexCount: Int32) -> MTLBuffer? {
@@ -163,7 +164,7 @@ final class Renderer: NSObject, MTKViewDelegate {
 
     private func renderTriangles(
         verticesArrayBuffer: MTLBuffer,
-        verticesArrayLength: Int,
+//        verticesArrayLength: Int,
         indexArrayBuffer: MTLBuffer,
         indexCount: Int32,
         renderPipelineState: MTLRenderPipelineState,
@@ -181,16 +182,29 @@ final class Renderer: NSObject, MTKViewDelegate {
         renderPassDescriptor.colorAttachments[0].loadAction = .clear
         renderPassDescriptor.colorAttachments[0].storeAction = .store
         
-        renderEncoder.setVertexBuffer(verticesArrayBuffer, offset: 0, index: 0)
+        if false {
+            print(indexCount, "aqui")
+            for i in 0..<indexCount {
+                print(indexArrayBuffer.contents().assumingMemoryBound(to: UInt32.self).advanced(by: Int(i)).pointee)
+            }
+            
+            print(vertexCount1, "aqui2")
+            for i in 0..<vertexCount1 {
+                print(verticesArrayBuffer.contents().assumingMemoryBound(to: Vertex.self).advanced(by: Int(i)).pointee)
+            }
+            a = false
+        }
         
-        renderEncoder.setVertexBuffer(indexArrayBuffer, offset: 0, index: 1)
-        //num sei
-        renderEncoder.drawIndexedPrimitives(type: .triangle, indexCount: Int(indexCount), indexType: .uint16, indexBuffer: indexArrayBuffer, indexBufferOffset: 0)
+        
+        renderEncoder.setVertexBuffer(verticesArrayBuffer, offset: 0, index: 0)
+        renderEncoder.drawIndexedPrimitives(type: .triangle, indexCount: Int(indexCount), indexType: .uint32, indexBuffer: indexArrayBuffer, indexBufferOffset: 0)
         renderEncoder.endEncoding()
         newCommandBuffer.present(drawable)
         newCommandBuffer.commit()
         newCommandBuffer.waitUntilCompleted()
     }
+    
+    var a = true
 }
 
 // MARK: Pipeline State
@@ -264,5 +278,4 @@ class GameOfLifeRenderer {
             fatalError("Failed to access result buffer contents")
         }
     }
-        
 }
