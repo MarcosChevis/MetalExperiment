@@ -7,7 +7,7 @@
 
 import MetalKit
 
-let SIZE: Int32 = 500
+let SIZE: Int32 = 100
 var vertexCount1 = 0
 
 final class Renderer: NSObject, MTKViewDelegate {
@@ -17,7 +17,6 @@ final class Renderer: NSObject, MTKViewDelegate {
     var renderPipelineState: MTLRenderPipelineState?
     var library: MTLLibrary?
     var triangulationPipelineState: MTLComputePipelineState?
-    var timer = Timer()
     
     private var clearColor: MTLClearColor  = MTLClearColorMake(1.0, 1.0, 1.0, 1.0)
     var game: GameOfLifeRenderer?
@@ -48,7 +47,7 @@ final class Renderer: NSObject, MTKViewDelegate {
         var pols = [RegularPolygon]()
         let step = 2.0 / Float(SIZE)
         let radius: Float = step * 0.5 // Set the radius to half of the step to fit the polygons exactly within the screen
-        let amountOfSides: Int32 = 5
+        let amountOfSides: Int32 = 4
         var bufferStart: Int32 = 0
         let color = simd_float4(0, 0, 0, 0)
         
@@ -65,7 +64,7 @@ final class Renderer: NSObject, MTKViewDelegate {
                         radius: radius,
                         amountOfSides: amountOfSides,
                         color: color,
-                        rotationAngle: .pi/2,
+                        rotationAngle: .pi/4,
                         bufferStart: bufferStart
                     )
                 )
@@ -159,7 +158,7 @@ final class Renderer: NSObject, MTKViewDelegate {
         commandEncoder.dispatchThreads(threadsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)
         commandEncoder.endEncoding()
         commandBuffer.commit()
-        commandBuffer.waitUntilCompleted()
+        
     }
 
     private func renderTriangles(
@@ -201,7 +200,6 @@ final class Renderer: NSObject, MTKViewDelegate {
         renderEncoder.endEncoding()
         newCommandBuffer.present(drawable)
         newCommandBuffer.commit()
-        newCommandBuffer.waitUntilCompleted()
     }
     
     var a = true
