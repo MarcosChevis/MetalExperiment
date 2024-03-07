@@ -6,17 +6,19 @@
 //
 
 import MetalKit
+import SwiftUI
 
 final class MetalViewCoordinator {
-    
-    private var metalDevice: MTLDevice?
-    private var renderer: Renderer
+    private(set) var renderer: Renderer
     private(set) var metalView: MTKView
+    @Binding
+    private(set) var drawer: Drawer
     
-    init() {
-        metalDevice = MTLCreateSystemDefaultDevice()
-        self.renderer = Renderer(metalDevice: metalDevice)
+    init(drawer: Binding<Drawer>) {
+        self.renderer = Renderer()
         self.metalView = MTKView()
+        self._drawer = drawer
+        self.drawer.renderer = renderer
         setupView()
     }
     
@@ -32,5 +34,14 @@ final class MetalViewCoordinator {
         
         metalView.framebufferOnly = false
         metalView.drawableSize = metalView.frame.size
+    }
+}
+
+final class Drawer {
+    var renderer: Renderer?
+    
+    
+    func addPolygon(poly: RegularPolygon) {
+        renderer?.polygons.append(poly)
     }
 }

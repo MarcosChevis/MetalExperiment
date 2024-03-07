@@ -13,6 +13,8 @@
 		BA2CD8B12B7FFAFC006C3C1A /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BA2CD8B02B7FFAFC006C3C1A /* Preview Assets.xcassets */; };
 		BA2CD8B82B7FFBEF006C3C1A /* MetalViewCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA2CD8B72B7FFBEF006C3C1A /* MetalViewCoordinator.swift */; };
 		BA2CD8BA2B7FFC03006C3C1A /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = BA2CD8B92B7FFC03006C3C1A /* Shaders.metal */; };
+		BA9B2DF82B9929E2003155F5 /* Things.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA9B2DF72B9929E2003155F5 /* Things.swift */; };
+		BA9B2DFA2B994E41003155F5 /* ProcessingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA9B2DF92B994E41003155F5 /* ProcessingView.swift */; };
 		BADF8EEC2B86BF0800A399F2 /* Stridable.swift in Sources */ = {isa = PBXBuildFile; fileRef = BADF8EEB2B86BF0800A399F2 /* Stridable.swift */; };
 		BADF8EEE2B87EAB900A399F2 /* Renderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BADF8EED2B87EAB900A399F2 /* Renderer.swift */; };
 /* End PBXBuildFile section */
@@ -27,6 +29,8 @@
 		BA2CD8B72B7FFBEF006C3C1A /* MetalViewCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalViewCoordinator.swift; sourceTree = "<group>"; };
 		BA2CD8B92B7FFC03006C3C1A /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
 		BA2CD8BB2B7FFC16006C3C1A /* definitions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = definitions.h; sourceTree = "<group>"; };
+		BA9B2DF72B9929E2003155F5 /* Things.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Things.swift; sourceTree = "<group>"; };
+		BA9B2DF92B994E41003155F5 /* ProcessingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessingView.swift; sourceTree = "<group>"; };
 		BADF8EEB2B86BF0800A399F2 /* Stridable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stridable.swift; sourceTree = "<group>"; };
 		BADF8EED2B87EAB900A399F2 /* Renderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Renderer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -62,9 +66,11 @@
 			isa = PBXGroup;
 			children = (
 				BA2CD8A82B7FFAFA006C3C1A /* MetalExperimentApp.swift */,
+				BA9B2DF92B994E41003155F5 /* ProcessingView.swift */,
 				BA2CD8AA2B7FFAFA006C3C1A /* MetalViewRepresentable.swift */,
 				BA2CD8B72B7FFBEF006C3C1A /* MetalViewCoordinator.swift */,
 				BADF8EED2B87EAB900A399F2 /* Renderer.swift */,
+				BA9B2DF72B9929E2003155F5 /* Things.swift */,
 				BADF8EEB2B86BF0800A399F2 /* Stridable.swift */,
 				BA2CD8AC2B7FFAFC006C3C1A /* Assets.xcassets */,
 				BA2CD8AE2B7FFAFC006C3C1A /* MetalExperiment.entitlements */,
@@ -158,7 +164,9 @@
 				BA2CD8B82B7FFBEF006C3C1A /* MetalViewCoordinator.swift in Sources */,
 				BADF8EEC2B86BF0800A399F2 /* Stridable.swift in Sources */,
 				BADF8EEE2B87EAB900A399F2 /* Renderer.swift in Sources */,
+				BA9B2DF82B9929E2003155F5 /* Things.swift in Sources */,
 				BA2CD8A92B7FFAFA006C3C1A /* MetalExperimentApp.swift in Sources */,
+				BA9B2DFA2B994E41003155F5 /* ProcessingView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

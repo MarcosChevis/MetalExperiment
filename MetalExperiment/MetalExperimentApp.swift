@@ -12,7 +12,7 @@ struct MetalExperimentApp: App {
     var body: some Scene {
         WindowGroup {
             ZStack {
-                MetalViewRepresentable()
+                Text("")
                     .ignoresSafeArea()
 //                    .frame(width: 1000, height: 1000)
             }

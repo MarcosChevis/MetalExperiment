@@ -19,6 +19,9 @@ typealias ViewType = UIView
 #endif
 
 struct MetalViewRepresentable: ViewRepresentable {
+    @Binding
+    var drawer: Drawer
+    
     func makeView(context: ViewRepresentableContext<MetalViewRepresentable>) -> MTKView {
         context.coordinator.metalView
     }
@@ -26,10 +29,8 @@ struct MetalViewRepresentable: ViewRepresentable {
     func updateView(_ view: MTKView, context: ViewRepresentableContext<MetalViewRepresentable>) {}
     
     func makeCoordinator() -> MetalViewCoordinator {
-        MetalViewCoordinator()
+        MetalViewCoordinator(drawer: $drawer)
     }
-    
-    
 }
 
 extension MetalViewRepresentable {
@@ -57,5 +58,5 @@ extension MetalViewRepresentable {
 
 
 #Preview {
-    MetalViewRepresentable()
+    MetalViewRepresentable(drawer: .constant(Drawer()))
 }
