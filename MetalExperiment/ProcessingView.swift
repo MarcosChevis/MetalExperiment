@@ -10,8 +10,9 @@ import MetalKit
 
 extension ProcessingView {
     func setup() {
-        square(center: .init(x: 0, y: 0), sideSize: 0.5, color: .green, rotation: .pi/4)
-        square(center: .init(x: 0, y: 0), sideSize: 0.5, color: .green, rotation: .pi/2)
+        square(center: .init(x: 0, y: 0), sideSize: 0.5, color: .green, rotation: 0)
+        square(center: .init(x: 0, y: 0), sideSize: 0.5, color: .red, rotation: .pi/4)
+        
     }
 }
 

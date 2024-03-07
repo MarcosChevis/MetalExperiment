@@ -46,32 +46,39 @@ final class Renderer: NSObject, MTKViewDelegate {
         
         guard let polygonsBuffer = createPolygonsBuffer(),
               let verticesArrayBuffer = createVerticesArrayBuffer(vertexCount: vertexCount),
-              let indicesArrayBuffer = createIndexBuffer(indexCount: indexCount) else {
+              let indicesArrayBuffer = createIndexBuffer(indexCount: indexCount),
+              let commandBuffer = things.commandQueue.makeCommandBuffer()
+        
+        else {
             preconditionFailure("Buffer could not be created")
         }
         
         triangulatePolygons(
             polygonsBuffer: polygonsBuffer,
             indicesArrayBuffer: indicesArrayBuffer,
-            verticesArrayBuffer: verticesArrayBuffer
+            verticesArrayBuffer: verticesArrayBuffer,
+            commandBuffer: commandBuffer
         )
         
         renderPolygons(
             verticesArrayBuffer: verticesArrayBuffer,
             indicesArrayBuffer: indicesArrayBuffer,
             indexCount: indexCount,
-            drawable: view.currentDrawable,
-            renderPassDescriptor: view.currentRenderPassDescriptor
+            renderPassDescriptor: view.currentRenderPassDescriptor,
+            commandBuffer: commandBuffer
         )
+        guard let drawable = view.currentDrawable else { preconditionFailure() }
+        commandBuffer.present(drawable)
+        commandBuffer.commit()
     }
 
     private func triangulatePolygons(
         polygonsBuffer: MTLBuffer,
         indicesArrayBuffer: MTLBuffer,
-        verticesArrayBuffer: MTLBuffer
+        verticesArrayBuffer: MTLBuffer,
+        commandBuffer: MTLCommandBuffer
     ) {
-        guard let commandBuffer = things.commandQueue.makeCommandBuffer(),
-              let commandEncoder = commandBuffer.makeComputeCommandEncoder() else {
+        guard let commandEncoder = commandBuffer.makeComputeCommandEncoder() else {
             preconditionFailure("Failed to create command buffer or command encoder")
         }
         commandEncoder.setComputePipelineState(polygonTriangulationComputePipelineState)
@@ -84,20 +91,17 @@ final class Renderer: NSObject, MTKViewDelegate {
         let threadsPerThreadgroup = MTLSize(width: maxThreadsPerThreadgroup, height: 1, depth: 1)
         commandEncoder.dispatchThreads(threadsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)
         commandEncoder.endEncoding()
-        commandBuffer.commit()
     }
     
     private func renderPolygons(
         verticesArrayBuffer: MTLBuffer,
         indicesArrayBuffer: MTLBuffer,
         indexCount: Int32,
-        drawable: CAMetalDrawable?,
-        renderPassDescriptor: MTLRenderPassDescriptor?
+        renderPassDescriptor: MTLRenderPassDescriptor?,
+        commandBuffer: MTLCommandBuffer
     ) {
-        guard let drawable,
-              let renderPassDescriptor,
-              let newCommandBuffer = things.commandQueue.makeCommandBuffer(),
-              let renderEncoder = newCommandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else {
+        guard let renderPassDescriptor,
+              let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else {
             preconditionFailure("Failed to create render command encoder")
         }
 
@@ -109,8 +113,6 @@ final class Renderer: NSObject, MTKViewDelegate {
         renderEncoder.setVertexBuffer(verticesArrayBuffer, offset: 0, index: 0)
         renderEncoder.drawIndexedPrimitives(type: .triangle, indexCount: Int(indexCount), indexType: .uint32, indexBuffer: indicesArrayBuffer, indexBufferOffset: 0)
         renderEncoder.endEncoding()
-        newCommandBuffer.present(drawable)
-        newCommandBuffer.commit()
     }
 }
 
