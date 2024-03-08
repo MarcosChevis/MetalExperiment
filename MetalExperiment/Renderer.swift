@@ -14,7 +14,9 @@ final class Renderer: NSObject, MTKViewDelegate {
     private let polygonRenderPipelineState: MTLRenderPipelineState
     private let polygonTriangulationComputePipelineState: MTLComputePipelineState
     
-    private var clearColor: MTLClearColor  = MTLClearColorMake(1.0, 1.0, 1.0, 1.0)
+    var clearColor: MTLClearColor  = MTLClearColorMake(1.0, 1.0, 1.0, 1.0)
+    
+    var update: (() -> Void)?
     
     override init() {
         self.polygonRenderPipelineState = things.makePolygonRenderPipelineState()
@@ -24,10 +26,7 @@ final class Renderer: NSObject, MTKViewDelegate {
     
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {}
     
-    var polygons: [RegularPolygon] = [
-//        .init(center: [0, 0], radius: 1, amountOfSides: 8, color: [1, 1, 1, 1], rotationAngle: .pi/3, bufferStart: 0),
-//        .init(center: [0, 0], radius: 1, amountOfSides: 8, color: [1, 1, 1, 1], rotationAngle: 0, bufferStart: 0)
-    ]
+    var polygons: [RegularPolygon] = []
     
     func draw(in view: MTKView) {
         if !polygons.isEmpty { drawPolygons(in: view) }
@@ -70,6 +69,9 @@ final class Renderer: NSObject, MTKViewDelegate {
         guard let drawable = view.currentDrawable else { preconditionFailure() }
         commandBuffer.present(drawable)
         commandBuffer.commit()
+        
+        polygons = []
+        update?()
     }
 
     private func triangulatePolygons(

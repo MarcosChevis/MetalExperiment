@@ -10,11 +10,15 @@ import MetalKit
 
 extension ProcessingView {
     func setup() {
-        square(center: .init(x: 0, y: 0), sideSize: 0.5, color: .green, rotation: 0)
-        square(center: .init(x: 0, y: 0), sideSize: 0.5, color: .red, rotation: .pi/4)
-        
+        setClearColor(color: .gray)
+    }
+    
+    func update() {
+        square(center: .init(x: cos(drawer.time) / 2, y: sin(drawer.time) / 2), sideSize: 0.5, color: .green, rotation: Float(drawer.time))
+        square(center: .init(x: sin(drawer.time) / 2, y: cos(drawer.time) / 2), sideSize: 0.5, color: .blue, rotation: Float(-drawer.time))
     }
 }
+
 
 
 struct ProcessingView: View {
@@ -26,20 +30,26 @@ struct ProcessingView: View {
     
     var body: some View {
         MetalViewRepresentable(drawer: $drawer)
-            .frame(width: 500, height: 500)
+//            .frame(width: 500, height: 500)
             .onAppear {
                 setup()
+                drawer.update = self.update
             }
     }
     
     func square(center: CGPoint, sideSize: Float, color: Color, rotation: Float) {
         drawer.addPolygon(poly: RegularPolygon(center: center.toSimdFloat2(), radius: sqrt(sideSize)/2, amountOfSides: 4, color: color.toSimdFloat4(environment), rotationAngle: rotation, bufferStart: 0))
     }
+    
+    func setClearColor(color: Color) {
+        let resolved = color.resolve(in: self.environment)
+        drawer.setClearColor(color: (red: Double(resolved.red), green: Double(resolved.green), blue: Double(resolved.blue), opacity: Double(resolved.opacity)))
+    }
 }
 
-#Preview {
-    ProcessingView()
-}
+//#Preview {
+//    ProcessingView()
+//}
 
 extension CGPoint {
     func toSimdFloat2() -> simd_float2 {
