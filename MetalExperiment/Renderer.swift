@@ -9,14 +9,15 @@ import MetalKit
 
 final class Renderer: NSObject, MTKViewDelegate {
     
-    private let things = Things.shared
+    private let things = MetalResourceManager.shared
     
     private let polygonRenderPipelineState: MTLRenderPipelineState
     private let polygonTriangulationComputePipelineState: MTLComputePipelineState
     
     var clearColor: MTLClearColor  = MTLClearColorMake(1.0, 1.0, 1.0, 1.0)
     
-    var update: (() -> Void)?
+    var update: ((Double) -> Void)?
+    var frame = Double.zero
     
     override init() {
         self.polygonRenderPipelineState = things.makePolygonRenderPipelineState()
@@ -30,6 +31,8 @@ final class Renderer: NSObject, MTKViewDelegate {
     
     func draw(in view: MTKView) {
         if !polygons.isEmpty { drawPolygons(in: view) }
+        update?(frame)
+        frame += 1
     }
     
     
@@ -71,7 +74,6 @@ final class Renderer: NSObject, MTKViewDelegate {
         commandBuffer.commit()
         
         polygons = []
-        update?()
     }
 
     private func triangulatePolygons(

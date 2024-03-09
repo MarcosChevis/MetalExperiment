@@ -7,9 +7,9 @@
 
 import MetalKit
 
-final class Things {
+final class MetalResourceManager {
     
-    static let shared = Things()
+    static let shared = MetalResourceManager()
     
     let device: MTLDevice
     let commandQueue: MTLCommandQueue

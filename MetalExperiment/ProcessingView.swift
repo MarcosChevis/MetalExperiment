@@ -12,21 +12,17 @@ extension ProcessingView {
     func setup() {
         setClearColor(color: .gray)
     }
-    
-    func update() {
-        square(center: .init(x: cos(drawer.time) / 2, y: sin(drawer.time) / 2), sideSize: 0.5, color: .green, rotation: Float(drawer.time))
-        square(center: .init(x: sin(drawer.time) / 2, y: cos(drawer.time) / 2), sideSize: 0.5, color: .blue, rotation: Float(-drawer.time))
+
+    func update(_ frame: Double) {
+        square(center: .init(x: cos(frame / 1000) / 2, y: sin(frame / 1000) / 2), sideSize: 0.5, color: .green, rotation: Float(frame / 100))
+        square(center: .init(x: sin(frame / 1000) / 2, y: cos(frame / 1000) / 2), sideSize: 0.5, color: .blue, rotation: Float(-frame / 100))
     }
 }
 
-
-
 struct ProcessingView: View {
-    @Environment(\.self)
-    var environment
+    @Environment(\.self) var environment
     
-    @State
-    var drawer: Drawer = Drawer()
+    @State var drawer: Drawer = Drawer()
     
     var body: some View {
         MetalViewRepresentable(drawer: $drawer)
@@ -38,7 +34,7 @@ struct ProcessingView: View {
     }
     
     func square(center: CGPoint, sideSize: Float, color: Color, rotation: Float) {
-        drawer.addPolygon(poly: RegularPolygon(center: center.toSimdFloat2(), radius: sqrt(sideSize)/2, amountOfSides: 4, color: color.toSimdFloat4(environment), rotationAngle: rotation, bufferStart: 0))
+        drawer.addPolygon(poly: RegularPolygon(center: center.simdFloat2, radius: sqrt(sideSize)/2, amountOfSides: 4, color: color.toSimdFloat4(environment), rotationAngle: rotation, bufferStart: 0))
     }
     
     func setClearColor(color: Color) {
@@ -50,22 +46,3 @@ struct ProcessingView: View {
 //#Preview {
 //    ProcessingView()
 //}
-
-extension CGPoint {
-    func toSimdFloat2() -> simd_float2 {
-        [self.x.toFloat(), self.y.toFloat()]
-    }
-}
-
-extension CGFloat {
-    func toFloat() -> Float {
-        Float(self)
-    }
-}
-
-extension Color {
-    func toSimdFloat4(_ env: EnvironmentValues) -> simd_float4 {
-        let resolved = self.resolve(in: env)
-        return [resolved.red, resolved.green, resolved.blue, resolved.opacity]
-    }
-}
