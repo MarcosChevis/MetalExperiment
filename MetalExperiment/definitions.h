@@ -12,9 +12,23 @@
 
 
 struct Vertex {
-    vector_float2 position;
-    vector_float4 color;
+    simd_float2 position;
+    simd_float4 color;
 };
+
+struct vec_vertex3 {
+    struct Vertex vertices[3];
+};
+
+struct RegularPolygon {
+    simd_float2 center;
+    float radius;
+    int amountOfSides;
+    simd_float4 color;
+    float rotationAngle;
+    int bufferStart;
+};
+
 
 
 #endif /* definitions_h */

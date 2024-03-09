@@ -13,9 +13,13 @@
 		BA2CD8B12B7FFAFC006C3C1A /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BA2CD8B02B7FFAFC006C3C1A /* Preview Assets.xcassets */; };
 		BA2CD8B82B7FFBEF006C3C1A /* MetalViewCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA2CD8B72B7FFBEF006C3C1A /* MetalViewCoordinator.swift */; };
 		BA2CD8BA2B7FFC03006C3C1A /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = BA2CD8B92B7FFC03006C3C1A /* Shaders.metal */; };
-		BADF8EEC2B86BF0800A399F2 /* Stridable.swift in Sources */ = {isa = PBXBuildFile; fileRef = BADF8EEB2B86BF0800A399F2 /* Stridable.swift */; };
+		BA71B9BC2B9CFA14003EBBA7 /* CGPoint+simdFloat2.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA71B9BB2B9CFA14003EBBA7 /* CGPoint+simdFloat2.swift */; };
+		BA71B9BE2B9CFB13003EBBA7 /* CGFloat+float.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA71B9BD2B9CFB13003EBBA7 /* CGFloat+float.swift */; };
+		BA71B9C02B9CFB35003EBBA7 /* Color+toSimdFloat4.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA71B9BF2B9CFB35003EBBA7 /* Color+toSimdFloat4.swift */; };
+		BA71B9C22B9CFB5A003EBBA7 /* Drawer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA71B9C12B9CFB5A003EBBA7 /* Drawer.swift */; };
+		BA9B2DF82B9929E2003155F5 /* MetalResourceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA9B2DF72B9929E2003155F5 /* MetalResourceManager.swift */; };
+		BA9B2DFA2B994E41003155F5 /* ProcessingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA9B2DF92B994E41003155F5 /* ProcessingView.swift */; };
 		BADF8EEE2B87EAB900A399F2 /* Renderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BADF8EED2B87EAB900A399F2 /* Renderer.swift */; };
-		BADF8EF02B87EAF100A399F2 /* RegularPolygon.swift in Sources */ = {isa = PBXBuildFile; fileRef = BADF8EEF2B87EAF100A399F2 /* RegularPolygon.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,9 +32,13 @@
 		BA2CD8B72B7FFBEF006C3C1A /* MetalViewCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalViewCoordinator.swift; sourceTree = "<group>"; };
 		BA2CD8B92B7FFC03006C3C1A /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
 		BA2CD8BB2B7FFC16006C3C1A /* definitions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = definitions.h; sourceTree = "<group>"; };
-		BADF8EEB2B86BF0800A399F2 /* Stridable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stridable.swift; sourceTree = "<group>"; };
+		BA71B9BB2B9CFA14003EBBA7 /* CGPoint+simdFloat2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CGPoint+simdFloat2.swift"; sourceTree = "<group>"; };
+		BA71B9BD2B9CFB13003EBBA7 /* CGFloat+float.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CGFloat+float.swift"; sourceTree = "<group>"; };
+		BA71B9BF2B9CFB35003EBBA7 /* Color+toSimdFloat4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+toSimdFloat4.swift"; sourceTree = "<group>"; };
+		BA71B9C12B9CFB5A003EBBA7 /* Drawer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Drawer.swift; sourceTree = "<group>"; };
+		BA9B2DF72B9929E2003155F5 /* MetalResourceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalResourceManager.swift; sourceTree = "<group>"; };
+		BA9B2DF92B994E41003155F5 /* ProcessingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessingView.swift; sourceTree = "<group>"; };
 		BADF8EED2B87EAB900A399F2 /* Renderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Renderer.swift; sourceTree = "<group>"; };
-		BADF8EEF2B87EAF100A399F2 /* RegularPolygon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegularPolygon.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,12 +71,14 @@
 		BA2CD8A72B7FFAFA006C3C1A /* MetalExperiment */ = {
 			isa = PBXGroup;
 			children = (
+				BA71B9BA2B9CF9E3003EBBA7 /* Utils */,
 				BA2CD8A82B7FFAFA006C3C1A /* MetalExperimentApp.swift */,
+				BA9B2DF92B994E41003155F5 /* ProcessingView.swift */,
 				BA2CD8AA2B7FFAFA006C3C1A /* MetalViewRepresentable.swift */,
 				BA2CD8B72B7FFBEF006C3C1A /* MetalViewCoordinator.swift */,
+				BA71B9C12B9CFB5A003EBBA7 /* Drawer.swift */,
 				BADF8EED2B87EAB900A399F2 /* Renderer.swift */,
-				BADF8EEF2B87EAF100A399F2 /* RegularPolygon.swift */,
-				BADF8EEB2B86BF0800A399F2 /* Stridable.swift */,
+				BA9B2DF72B9929E2003155F5 /* MetalResourceManager.swift */,
 				BA2CD8AC2B7FFAFC006C3C1A /* Assets.xcassets */,
 				BA2CD8AE2B7FFAFC006C3C1A /* MetalExperiment.entitlements */,
 				BA2CD8AF2B7FFAFC006C3C1A /* Preview Content */,
@@ -84,6 +94,16 @@
 				BA2CD8B02B7FFAFC006C3C1A /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		BA71B9BA2B9CF9E3003EBBA7 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				BA71B9BB2B9CFA14003EBBA7 /* CGPoint+simdFloat2.swift */,
+				BA71B9BD2B9CFB13003EBBA7 /* CGFloat+float.swift */,
+				BA71B9BF2B9CFB35003EBBA7 /* Color+toSimdFloat4.swift */,
+			);
+			path = Utils;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -157,12 +177,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				BA2CD8BA2B7FFC03006C3C1A /* Shaders.metal in Sources */,
+				BA71B9BE2B9CFB13003EBBA7 /* CGFloat+float.swift in Sources */,
+				BA71B9BC2B9CFA14003EBBA7 /* CGPoint+simdFloat2.swift in Sources */,
 				BA2CD8AB2B7FFAFA006C3C1A /* MetalViewRepresentable.swift in Sources */,
+				BA71B9C22B9CFB5A003EBBA7 /* Drawer.swift in Sources */,
 				BA2CD8B82B7FFBEF006C3C1A /* MetalViewCoordinator.swift in Sources */,
-				BADF8EEC2B86BF0800A399F2 /* Stridable.swift in Sources */,
+				BA71B9C02B9CFB35003EBBA7 /* Color+toSimdFloat4.swift in Sources */,
 				BADF8EEE2B87EAB900A399F2 /* Renderer.swift in Sources */,
-				BADF8EF02B87EAF100A399F2 /* RegularPolygon.swift in Sources */,
+				BA9B2DF82B9929E2003155F5 /* MetalResourceManager.swift in Sources */,
 				BA2CD8A92B7FFAFA006C3C1A /* MetalExperimentApp.swift in Sources */,
+				BA9B2DFA2B994E41003155F5 /* ProcessingView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
