@@ -4,7 +4,6 @@
 //
 //  Created by Marcos Chevis on 22/02/24.
 //
-
 import MetalKit
 
 final class Renderer: NSObject, MTKViewDelegate {
@@ -54,7 +53,6 @@ final class Renderer: NSObject, MTKViewDelegate {
         else {
             preconditionFailure("Buffer could not be created")
         }
-        
         triangulatePolygons(
             polygonsBuffer: polygonsBuffer,
             indicesArrayBuffer: indicesArrayBuffer,
