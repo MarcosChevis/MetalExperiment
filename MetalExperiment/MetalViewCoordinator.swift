@@ -11,13 +11,11 @@ import SwiftUI
 final class MetalViewCoordinator {
     private(set) var renderer: Renderer
     private(set) var metalView: MTKView
-    @Binding private(set) var drawer: Drawer
     
-    init(drawer: Binding<Drawer>) {
-        self.renderer = Renderer()
+    init(renderer: Renderer) {
+        self.renderer = renderer
         self.metalView = MTKView()
-        self._drawer = drawer
-        self.drawer.renderer = renderer
+        
         setupView()
     }
     

@@ -8,34 +8,33 @@ import MetalKit
 
 final class Renderer: NSObject, MTKViewDelegate {
     
-    private let things = MetalResourceManager.shared
+    private let resourceMenager = MetalResourceManager.shared
     
     private let polygonRenderPipelineState: MTLRenderPipelineState
     private let polygonTriangulationComputePipelineState: MTLComputePipelineState
     
     var clearColor: MTLClearColor  = MTLClearColorMake(1.0, 1.0, 1.0, 1.0)
     
-    var update: ((Double) -> Void)?
+    var update: ((Double) -> [RegularPolygon])?
     var frame = Double.zero
     
     override init() {
-        self.polygonRenderPipelineState = things.makePolygonRenderPipelineState()
-        self.polygonTriangulationComputePipelineState = things.makePolygonTriangulationComputePipelineState()
+        self.polygonRenderPipelineState = resourceMenager.makePolygonRenderPipelineState()
+        self.polygonTriangulationComputePipelineState = resourceMenager.makePolygonTriangulationComputePipelineState()
         super.init()
     }
     
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {}
     
-    var polygons: [RegularPolygon] = []
-    
     func draw(in view: MTKView) {
-        if !polygons.isEmpty { drawPolygons(in: view) }
-        update?(frame)
+        let polygons = update?(frame) ?? []
+        if !polygons.isEmpty { drawPolygons(in: view, polygons: polygons) }
         frame += 1
     }
     
     
-    private func drawPolygons(in view: MTKView) {
+    private func drawPolygons(in view: MTKView, polygons: [RegularPolygon]) {
+        var polygons = polygons
         
         var vertexCount = Int32.zero
         var indexCount = Int32.zero
@@ -45,15 +44,16 @@ final class Renderer: NSObject, MTKViewDelegate {
             indexCount += polygons[i].amountOfSides * 3
         }
         
-        guard let polygonsBuffer = createPolygonsBuffer(),
+        guard let polygonsBuffer = createPolygonsBuffer(polygons: polygons),
               let verticesArrayBuffer = createVerticesArrayBuffer(vertexCount: vertexCount),
               let indicesArrayBuffer = createIndexBuffer(indexCount: indexCount),
-              let commandBuffer = things.commandQueue.makeCommandBuffer()
+              let commandBuffer = resourceMenager.commandQueue.makeCommandBuffer()
         
         else {
             preconditionFailure("Buffer could not be created")
         }
         triangulatePolygons(
+            polygons: polygons,
             polygonsBuffer: polygonsBuffer,
             indicesArrayBuffer: indicesArrayBuffer,
             verticesArrayBuffer: verticesArrayBuffer,
@@ -75,6 +75,7 @@ final class Renderer: NSObject, MTKViewDelegate {
     }
 
     private func triangulatePolygons(
+        polygons: [RegularPolygon],
         polygonsBuffer: MTLBuffer,
         indicesArrayBuffer: MTLBuffer,
         verticesArrayBuffer: MTLBuffer,
@@ -120,15 +121,15 @@ final class Renderer: NSObject, MTKViewDelegate {
 
 // MARK: Create Buffers
 extension Renderer {
-    private func createPolygonsBuffer() -> MTLBuffer? {
-        return things.device.makeBuffer(bytes: polygons, length: MemoryLayout<RegularPolygon>.stride * polygons.count)
+    private func createPolygonsBuffer(polygons: [RegularPolygon]) -> MTLBuffer? {
+        return resourceMenager.device.makeBuffer(bytes: polygons, length: MemoryLayout<RegularPolygon>.stride * polygons.count)
     }
     private func createIndexBuffer(indexCount: Int32) -> MTLBuffer? {
-        return things.device.makeBuffer(length: MemoryLayout<UInt32>.stride * Int(indexCount))
+        return resourceMenager.device.makeBuffer(length: MemoryLayout<UInt32>.stride * Int(indexCount))
     }
     
     private func createVerticesArrayBuffer(vertexCount: Int32) -> MTLBuffer? {
         let verticesArrayLength =  Int(vertexCount) * MemoryLayout<Vertex>.stride
-        return things.device.makeBuffer(length: verticesArrayLength)
+        return resourceMenager.device.makeBuffer(length: verticesArrayLength)
     }
 }

@@ -1,5 +1,5 @@
 //
-//  Things.swift
+//  MetalResourceManager.swift
 //  MetalExperiment
 //
 //  Created by Marcos Chevis on 06/03/24.

@@ -6,10 +6,17 @@
 //
 
 import SwiftUI
+#if os(iOS)
+import UIKit
+typealias AppColor = UIColor
+#elseif os(macOS)
+import AppKit
+typealias AppColor = NSColor
+#endif
 
 extension Color {
-    func toSimdFloat4(_ env: EnvironmentValues) -> simd_float4 {
-        let resolved = self.resolve(in: env)
-        return [resolved.red, resolved.green, resolved.blue, resolved.opacity]
+    func toSimdFloat4() -> simd_float4 {
+        guard let resolved = AppColor(self).cgColor.components else { return .init(Float.zero, Float.zero, Float.zero, Float.zero) }
+        return [resolved[0].float, resolved[1].float, resolved[2].float, resolved[3].float]
     }
 }
