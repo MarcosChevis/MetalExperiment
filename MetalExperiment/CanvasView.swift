@@ -8,7 +8,7 @@
 import SwiftUI
 import MetalKit
 
-struct ProcessingView: View {
+struct CanvasView: View {
     
     @State private var drawer: Drawer = Drawer()
     @State private var renderer: Renderer = Renderer()
@@ -30,7 +30,7 @@ struct ProcessingView: View {
 }
 
 #Preview {
-    ProcessingView { drawer in
+    CanvasView { drawer in
         
     } update: { drawer, frame in
         drawer.drawSquare(center: .init(x: cos(frame / 1000) / 2, y: sin(frame / 1000) / 2), sideSize: 0.5, color: .green, rotation: Float(frame / 100))
