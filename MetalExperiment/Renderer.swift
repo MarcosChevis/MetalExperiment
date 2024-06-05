@@ -103,15 +103,18 @@ final class Renderer: NSObject, MTKViewDelegate {
         renderPassDescriptor: MTLRenderPassDescriptor?,
         commandBuffer: MTLCommandBuffer
     ) {
-        guard let renderPassDescriptor,
-              let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else {
+        guard let renderPassDescriptor else {
             preconditionFailure("Failed to create render command encoder")
         }
-
-        renderEncoder.setRenderPipelineState(polygonRenderPipelineState)
         renderPassDescriptor.colorAttachments[0].clearColor = clearColor
         renderPassDescriptor.colorAttachments[0].loadAction = .clear
         renderPassDescriptor.colorAttachments[0].storeAction = .store
+        
+        guard let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else {
+            preconditionFailure("Failed to create render command encoder")
+        }
+        
+        renderEncoder.setRenderPipelineState(polygonRenderPipelineState)
         
         renderEncoder.setVertexBuffer(verticesArrayBuffer, offset: 0, index: 0)
         renderEncoder.drawIndexedPrimitives(type: .triangle, indexCount: Int(indexCount), indexType: .uint32, indexBuffer: indicesArrayBuffer, indexBufferOffset: 0)

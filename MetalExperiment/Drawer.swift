@@ -10,7 +10,7 @@ import MetalKit
 import SwiftUI
 
 final class Drawer {
-    private var setup: Setup = .init()
+    var setup: Setup = .init()
     private var polygons: [RegularPolygon] = []
     
     private func addPolygon(poly: RegularPolygon) {

@@ -20,20 +20,24 @@ struct CanvasView: View {
     var body: some View {
         MetalViewRepresentable(renderer: renderer)
             .onAppear {
+                setup(drawer)
+                renderer.clearColor = drawer.setup.backgroundColor
                 renderer.update = { frame in
                     update(drawer, frame)
                     return drawer.popPolygons()
                 }
-                setup(drawer)
             }
     }
 }
 
 #Preview {
     CanvasView { drawer in
-        
+        drawer
+            .setBackgroundColor(color: .gray)
     } update: { drawer, frame in
-        drawer.drawSquare(center: .init(x: cos(frame / 1000) / 2, y: sin(frame / 1000) / 2), sideSize: 0.5, color: .green, rotation: Float(frame / 100))
+        drawer
+            .drawSquare(center: .init(x: cos(frame / 1000) / 2, y: sin(frame / 1000) / 2), sideSize: 0.5, color: .green, rotation: Float(frame / 100))
+            
     }
         .ignoresSafeArea()
 }

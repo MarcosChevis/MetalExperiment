@@ -13,7 +13,8 @@ struct MetalExperimentApp: App {
         WindowGroup {
             ZStack {
                 CanvasView { drawer in
-                    
+                    drawer
+                        .setBackgroundColor(color: .green)
                 } update: { drawer, frame in
                     drawer
                         .drawCircle(center: .zero, radius: 1)
